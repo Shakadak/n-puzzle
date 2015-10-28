@@ -1,6 +1,7 @@
 import Data.PSQueue as PSQ
 import Data.Map     as Map
 import Data.Set     as Set
+import Data.List    (unfoldr)
 
 data AStar a cost = AStar {
     expand    :: a -> Set a,
@@ -8,7 +9,7 @@ data AStar a cost = AStar {
     opened    :: PSQ.PSQ a cost,
     closed    :: Set.Set a,
     distances :: Map.Map a cost,
-    path      :: Map.Map a (Maybe a),
+    path      :: Map.Map a a,
     heuristic :: a -> cost,
     cost      :: a -> a -> cost }
 
@@ -17,7 +18,7 @@ aStarSearch expand cost heuristic goal start =
     { expand    = expand
     , opened    = PSQ.singleton start (heuristic start)
     , closed    = Set.empty
-    , path      = Map.singleton start Nothing
+    , path      = Map.empty
     , heuristic = heuristic
     , goal      = goal
     , distances = Map.empty
@@ -27,7 +28,7 @@ runAStar :: (Ord a, Ord cost, Num cost) => AStar a cost -> Maybe [a]
 runAStar aStar = do
     (current :-> _, o) <- PSQ.minView (opened aStar)
     if (goal aStar) current
-       then backtrack (path aStar) current
+       then Just $ backtrack (path aStar) current
        else let (aStar, _) = Set.fold eval (aStar {opened = o, closed = Set.insert current (closed aStar)}, (current, 0)) ((expand aStar) current)
              in runAStar aStar
 
@@ -42,20 +43,22 @@ eval n (aStar, t@(parent, g)) =
         case (PSQ.lookup n o, Set.member n c, Map.lookup n p, Map.lookup n (distances aStar)) of
           (Nothing, False, _,       _)                   -> (aStar
             { opened    = PSQ.insert n (gn + h n) o
-            , path      = Map.insert n (Just parent) p
+            , path      = Map.insert n parent p
             , distances = Map.insert n gn d },
               t)
           (Nothing, True,  Just(_), Just(gp)) | gn < gp -> (aStar
             { opened = PSQ.insert n (gn + h n) o
             , closed = Set.delete n            c
-            , path   = Map.insert n (Just parent) p
+            , path   = Map.insert n parent p
             , distances = Map.insert n gn d },
               t)
           (Just(_), _,     Just(_), Just(gp)) | gn < gp   -> (aStar
             { opened = PSQ.adjust (\_ -> (gn + h n)) n o
-            , path   = Map.insert n (Just parent) p
+            , path   = Map.insert n parent p
             , distances = Map.insert n gn d },
               t)
           _                                         -> (aStar, t)
 
-backtrack = undefined
+backtrack paths = unfoldr (\x -> case Map.lookup x paths of
+                                    Just y  -> Just (x, y)
+                                    Nothing -> Nothing)
