@@ -1,4 +1,4 @@
-aStar goal start =
+{-aStar goal start =
     runAStar (PSQ.singleton start (heuristic start) (Set.empty) (Map.singleton start Nothing)
 
 runAStar open closed parents = do
@@ -41,4 +41,31 @@ Set.empty
                       then update the neighbor with the new, lower, g value
                            change the neighbor's parent to our current node
                       else this neighbor is not in either the open or closed list {
-                          add the neighbor to the open list and set its g value
+                          add the neighbor to the open list and set its g value-}
+
+import Data.PSQueue as PSQ
+import Data.Map     as Map
+import Data.Set     as Set
+
+data AStar a b = AStar {
+    opened    :: PSQ.PSQ a b,
+    closed    :: Set.Set a,
+    path      :: Map.Map a (Maybe (a, b)),
+    heuristic :: a -> b,
+    cost      :: a -> a -> b }
+
+eval (aStar, (parent, g)) n =
+    let gn = g + (cost aStar) parent n
+        h = heuristic aStar in
+        case (PSQ.lookup n (opened aStar), Set.member n (closed aStar), Map.lookup n (path aStar)) of
+          (Nothing, False, _)                       -> aStar {
+              opened = PSQ.insert n (gn + h n) (opened aStar),
+              path   = Map.insert n (parent, gn) (path aStar) }
+          (Nothing, True,  Just(_, gp)) | gn < gp   -> aStar {
+              opened = PSQ.insert n (gn + h n) (opened aStar),
+              closed = Set.delete n            (closed aStar),
+              path   = Map.insert n (parent, gn) (path aStar) }
+          (Just(_), _,     Just(_, gp)) | gn < gp   -> aStar {
+              opened = PSQ.adjust n (gn + h n) (opened aStar),
+              path   = Map.insert n (parent, gn) (path aStar) }
+          _                                         -> aStar
