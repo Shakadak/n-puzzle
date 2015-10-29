@@ -29,8 +29,8 @@ runAStar aStar = do
     (current :-> _, o) <- PSQ.minView (opened aStar)
     if (goal aStar) current
        then Just $ backtrack (path aStar) current
-       else let (aStar, _) = Set.fold eval (aStar {opened = o, closed = Set.insert current (closed aStar)}, (current, 0)) ((expand aStar) current)
-             in runAStar aStar
+       else let aStar = aStar {opened = o, closed = Set.insert current (closed aStar)}
+             in runAStar $ fst (Set.fold eval (aStar, (current, 0)) ((expand aStar) current))
 
 eval :: (Ord a, Ord cost, Num cost) => a -> (AStar a cost, (a, cost)) -> (AStar a cost, (a, cost))
 eval n (aStar, t@(parent, g)) =
