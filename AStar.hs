@@ -28,7 +28,7 @@ runAStar :: (Ord a, Ord cost, Num cost) => AStar a cost -> Maybe [a]
 runAStar aStar = do
     (current :-> _, o) <- PSQ.minView (opened aStar)
     if goal aStar current
-       then Just $ backtrack (path aStar) current
+       then return $ backtrack (path aStar) current
        else let aStar = aStar {opened = o, closed = Set.insert current (closed aStar)}
              in runAStar $ fst (Set.fold eval (aStar, (current, 0)) (expand aStar current))
 
@@ -46,7 +46,7 @@ eval n (aStar, t@(parent, g)) =
             , path      = Map.insert n parent p
             , distances = Map.insert n gn d },
               t)
-          (Nothing, True,  Just _, Just gp) | gn < gp -> (aStar
+          (Nothing, True,  Just _, Just gp) | gn < gp   -> (aStar
             { opened = PSQ.insert n (gn + h n) o
             , closed = Set.delete n            c
             , path   = Map.insert n parent p
@@ -57,8 +57,6 @@ eval n (aStar, t@(parent, g)) =
             , path   = Map.insert n parent p
             , distances = Map.insert n gn d },
               t)
-          _                                         -> (aStar, t)
+          _                                             -> (aStar, t)
 
-backtrack paths = unfoldr (\x -> case Map.lookup x paths of
-                                    Just y  -> Just (x, y)
-                                    Nothing -> Nothing)
+backtrack paths = unfoldr (\x -> Map.lookup x paths >>= return . (,) x)
