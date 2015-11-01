@@ -2,7 +2,6 @@ import Data.PSQueue as PSQ
 import Data.Map     as Map
 import Data.Set     as Set
 import Data.List    (unfoldr)
-import Control.Monad (liftM)
 
 data AStar a cost = AStar {
     expand    :: a -> Set a,
@@ -60,4 +59,4 @@ eval n (aStar, t@(parent, g)) =
               t)
           _                                             -> (aStar, t)
 
-backtrack paths = unfoldr (\x -> liftM ((,) x) (Map.lookup x paths))
+backtrack paths = unfoldr (\x -> fmap ((,) x) (Map.lookup x paths))
