@@ -1,3 +1,4 @@
+module AStar (aStarSearch) where
 import Data.PSQueue as PSQ
 import Data.Map     as Map
 import Data.Set     as Set
@@ -14,7 +15,7 @@ data AStar a cost = AStar {
     cost      :: a -> a -> cost }
 
 aStarSearch expand cost heuristic goal start =
-    runAStar AStar
+    fmap ((start:) . reverse) $ runAStar AStar
     { expand    = expand
     , opened    = PSQ.singleton start (heuristic start)
     , closed    = Set.empty
@@ -29,8 +30,8 @@ runAStar aStar = do
     (current :-> _, o) <- PSQ.minView (opened aStar)
     if goal aStar current
        then return $ backtrack (path aStar) current
-       else let aStar = aStar {opened = o, closed = Set.insert current (closed aStar)}
-             in runAStar $ fst (Set.fold eval (aStar, (current, 0)) (expand aStar current))
+       else let aStar' = aStar {opened = o, closed = Set.insert current (closed aStar)}
+             in runAStar $ fst (Set.foldr eval (aStar', (current, 0)) (expand aStar' current))
 
 eval :: (Ord a, Ord cost, Num cost) => a -> (AStar a cost, (a, cost)) -> (AStar a cost, (a, cost))
 eval n (aStar, t@(parent, g)) =
