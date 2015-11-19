@@ -6,4 +6,4 @@ import Control.Arrow
 
 fromEdges :: (Eq node, Ord node) => [(node, node)] -> [(node, [node])]
 fromEdges = map shave . groupBy ((==) `on` fst) . sortBy (comparing fst)
-    where shave = (head *** id) . unzip
+    where shave = first head . unzip
