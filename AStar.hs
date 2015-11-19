@@ -15,7 +15,7 @@ data AStar a cost = AStar {
     cost      :: a -> a -> cost }
 
 aStarSearch expand cost heuristic goal start =
-    fmap ((start:) . reverse) $ runAStar AStar
+    runAStar AStar
     { expand    = expand
     , opened    = PSQ.singleton start (heuristic start)
     , closed    = Set.empty
@@ -60,4 +60,4 @@ eval n (aStar, t@(parent, g)) =
               t)
           _                                             -> (aStar, t)
 
-backtrack paths = unfoldr (\x -> fmap ((,) x) (Map.lookup x paths))
+backtrack paths goal = reverse $ goal:unfoldr (\x -> fmap (\x -> (x, x)) (Map.lookup x paths)) goal
