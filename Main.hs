@@ -8,21 +8,23 @@ import AStar
 
 main = do args <- getArgs
           content <- readFile (head args)
-          let (edges, [s,g]) = span ((== 4) . length) . filter (not . null) . map (readMany :: String -> [Int]) $ lines content
+          let (edges, [s,g]) = span ((== 4) . length) . filter (not . null) . map readMany $ lines content
           let graph = fromEdges . bidir . map cnv $ edges
               start = fromCoord s
               goal = fromCoord g
           putStr content
           putStrLn "--solution--"
-          putStr $ maybe "No path available\n" showPath $ aStarSearch (expand graph) cost (manhattan goal) (== goal) start
+          putStr $ maybe "No path available\n" showPath $ aStarSearch (expand graph) cost (manhattan' goal) (== goal) start
 
-showPath = foldl' (\str (x, y) -> str ++ show x ++ "," ++ show y ++ "\n") ""
+showPath = foldl' (\str (x, y) -> str ++ show (truncate x) ++ "," ++ show (truncate y) ++ "\n") ""
 
 expand xs x = fromList . fromMaybe [] $ lookup x xs
 
-cost _ _ = 1
+cost x y =  1
 
 manhattan (gx, gy) (cx, cy) = abs (gx - cx) + abs (gy - cy)
+
+manhattan' (gx, gy) (cx, cy) = sqrt $ (gx - cx) ^ 2 + (gy - cy) ^ 2
 
 fromCoord (x:y:_) = (x, y)
 
