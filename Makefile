@@ -1,12 +1,14 @@
-all:
+SRC := AStar.hs Graph.hs Parser.hs Main.hs
+
+graphi: $(SRC)
 	stack build
 	ln -sf .stack-work/install/x86_64-linux/lts-3.14/7.10.2/bin/graphi
 
-re: clean all
+re: clean graphi
 
 clean:
 	stack clean
 	rm graphi
 
-run: all
-	stack exec graphi ../file.graph
+run: graphi
+	stack exec graphi ../maps/20x20.graph
