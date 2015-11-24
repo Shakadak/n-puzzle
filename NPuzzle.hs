@@ -26,7 +26,7 @@ generateGoal :: Int -> Grid
 generateGoal = toArray . concat . solution
 
 expand :: Grid -> Set Grid
-expand state = fromList $ maybe [] pure . gridSwap state =<< [Up, Dn, Lt, Rt]
+expand state = {-# SCC "expand" #-} fromList $ maybe [] pure . gridSwap state =<< [Up, Dn, Lt, Rt]
 
 gridSwap :: Grid -> Direction -> Maybe Grid
 gridSwap grid dir = do
