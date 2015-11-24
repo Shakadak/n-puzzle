@@ -9,7 +9,7 @@ import Data.Maybe   (fromMaybe)
 data AStar a cost = AStar {
     expand    :: a -> Set a,
     goal      :: a -> Bool,
-    opened    :: PSQ.OrdPSQ a cost a,
+    opened    :: PSQ.OrdPSQ a cost Int,
     closed    :: Set.Set a,
     distances :: Map.Map a cost,
     path      :: Map.Map a a,
@@ -19,7 +19,7 @@ data AStar a cost = AStar {
 aStarSearch expand cost heuristic goal start =
     runAStar AStar
     { expand    = expand
-    , opened    = PSQ.singleton start (heuristic start) start
+    , opened    = PSQ.singleton start (heuristic start) 0
     , closed    = Set.empty
     , path      = Map.empty
     , heuristic = heuristic
@@ -29,7 +29,7 @@ aStarSearch expand cost heuristic goal start =
 
 runAStar :: (Ord a, Ord cost, Num cost) => AStar a cost -> Maybe [a]
 runAStar aStar = do
-    (k, p, current, o) <- ({-# SCC "PSQ.minView" #-} PSQ.minView (opened aStar))
+    (current, p, _, o) <- ({-# SCC "PSQ.minView" #-} PSQ.minView (opened aStar))
     if goal aStar current
        then return $ backtrack (path aStar) current
        else let aStar' = aStar {opened = o, closed = Set.insert current (closed aStar)}
@@ -45,18 +45,18 @@ eval n (aStar, t@(parent, f)) = {-# SCC "eval" #-}
         g = heuristic aStar in
         case (({-# SCC "PSQ.lookup" #-} PSQ.lookup n o), ({-# SCC "Set.Member" #-} Set.member n c), ({-# SCC "Map.lookupPath" #-} Map.lookup n p), ({-# SCC "Map.lookupDistance" #-} Map.lookup n (distances aStar))) of
           (Nothing, False, _,      _)                   -> (aStar
-            { opened    = ({-# SCC "PSQ.insert1" #-} PSQ.insert n (fn + g n) n o)
+            { opened    = ({-# SCC "PSQ.insert1" #-} PSQ.insert n (fn + g n) 0 o)
             , path      = ({-# SCC "Map.insertPath1" #-} Map.insert n parent p)
             , distances = ({-# SCC "Map.insertDistance1" #-} Map.insert n fn d) },
               t)
           (Nothing, True,  Just _, Just fp) | fn < fp   -> (aStar
-            { opened = ({-# SCC "PSQ.insert2" #-} PSQ.insert n (fn + g n) n o)
+            { opened = ({-# SCC "PSQ.insert2" #-} PSQ.insert n (fn + g n) 0 o)
             , closed = Set.delete n            c
             , path   = ({-# SCC "Map.insertPath2" #-} Map.insert n parent p)
             , distances = ({-# SCC "Map.insertDistance2" #-} Map.insert n fn d) },
               t)
           (Just _,  _,     Just _, Just fp) | fn < fp   -> (aStar
-            { opened = ({-# SCC "PSQ.adjust" #-} PSQ.insert n (fn + g n) n o)
+            { opened = ({-# SCC "PSQ.adjust" #-} PSQ.insert n (fn + g n) 0 o)
             , path   = ({-# SCC "Map.insertPath3" #-} Map.insert n parent p)
             , distances = ({-# SCC "Map.insertDistance3" #-} Map.insert n fn d) },
               t)
