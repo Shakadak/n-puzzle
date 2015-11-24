@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable graphi
   main-is:             Main.hs
-  other-modules:       Graph, AStar, Parser, NPuzzle
+  other-modules:       Heuristics, AStar, Parser, NPuzzle
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
                      , PSQueue >=1.1 && <1.2

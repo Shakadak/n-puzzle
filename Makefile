@@ -1,8 +1,6 @@
-SRC := AStar.hs Graph.hs Parser.hs Main.hs
-
-graphi: $(SRC)
+graphi:
 	stack build
-	ln -sf .stack-work/install/x86_64-linux/lts-3.14/7.10.2/bin/graphi
+	@ln -sf .stack-work/install/x86_64-linux/lts-3.14/7.10.2/bin/graphi
 
 re: clean graphi
 

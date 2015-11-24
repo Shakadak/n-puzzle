@@ -1,9 +1,6 @@
 import System.Environment
-import Data.Tuple
 import Data.List
 import Data.Maybe
-import Data.Set (fromList)
-import Graph
 import AStar
 import Parser
 import NPuzzle
