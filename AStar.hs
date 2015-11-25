@@ -1,7 +1,7 @@
 module AStar (aStarSearch) where
 import Data.HashPSQ as PSQ
 import Data.Hashable
-import Data.Map     as Map
+import Data.HashMap     as Map
 import Data.Set     as Set
 import Data.List    (unfoldr)
 import Data.Maybe   (fromMaybe)
@@ -10,7 +10,7 @@ data AStar a cost = AStar {
     expand    :: a -> Set a,
     goal      :: a -> Bool,
     opened    :: PSQ.HashPSQ a cost a,
-    closed    :: Set.Set a,
+    closed    :: Map.Map a (),
     distances :: Map.Map a cost,
     path      :: Map.Map a a,
     heuristic :: a -> cost,
@@ -28,7 +28,7 @@ aStarSearch expand cost heuristic goal start =
     runAStar AStar
     { expand    = expand
     , opened    = PSQ.singleton start (heuristic start) start
-    , closed    = Set.empty
+    , closed    = Map.empty
     , path      = Map.empty
     , heuristic = heuristic
     , goal      = goal
@@ -39,7 +39,7 @@ runAStar aStar = do
     (k, p, current, o) <- PSQ.minView (opened aStar)
     if goal aStar current
        then return $ backtrack (path aStar) current
-       else let aStar' = aStar {opened = o, closed = Set.insert current (closed aStar)}
+       else let aStar' = aStar {opened = o, closed = Map.insert current () (closed aStar)}
              in runAStar $ fst (Set.foldr eval (aStar', (current, fromMaybe 0 (Map.lookup current $ distances aStar'))) (expand aStar' current))
 
 eval n (aStar, t@(parent, f)) =
@@ -49,7 +49,7 @@ eval n (aStar, t@(parent, f)) =
         p = path      aStar
         d = distances aStar
         g = heuristic aStar in
-        case (PSQ.lookup n o, Set.member n c, Map.lookup n p, Map.lookup n (distances aStar)) of
+        case (PSQ.lookup n o, Map.member n c, Map.lookup n p, Map.lookup n (distances aStar)) of
           (Nothing, False, _,      _)                   -> (aStar
             { opened    = PSQ.insert n (fn + g n) n o
             , path      = Map.insert n parent p
@@ -57,7 +57,7 @@ eval n (aStar, t@(parent, f)) =
               t)
           (Nothing, True,  Just _, Just fp) | fn < fp   -> (aStar
             { opened = PSQ.insert n (fn + g n) n o
-            , closed = Set.delete n            c
+            , closed = Map.delete n            c
             , path   = Map.insert n parent p
             , distances = Map.insert n fn d },
               t)
