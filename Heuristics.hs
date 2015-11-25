@@ -3,8 +3,7 @@ import Data.Array
 import Data.List
 import NPuzzle
 
-
-manhattan :: Grid -> Grid -> Int
+manhattan :: NPuzzle.Grid -> NPuzzle.Grid -> Int
 manhattan end start = sum $ map go (indices start)
     where
         manhattan' (gx, gy) (cx, cy) = abs (gx - cx) + abs (gy - cy)

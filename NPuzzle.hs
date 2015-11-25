@@ -5,6 +5,7 @@ import Data.Tuple
 import Data.Set (Set, fromList)
 import Data.Ord
 import Data.Function
+import Data.Hashable
 
 data Direction = Up | Dn | Lt | Rt
 type Coord = (Int, Int)
@@ -26,7 +27,7 @@ generateGoal :: Int -> Grid
 generateGoal = toArray . concat . solution
 
 expand :: Grid -> Set Grid
-expand state = fromList $ maybe [] pure . gridSwap state =<< [Up, Dn, Lt, Rt]
+expand state = {-# SCC "expand" #-} fromList $ maybe [] pure . gridSwap state =<< [Up, Dn, Lt, Rt]
 
 gridSwap :: Grid -> Direction -> Maybe Grid
 gridSwap grid dir = do
@@ -51,3 +52,9 @@ showGrid grid = concatMap ((++ "\n") . intercalate "  " . map show) nums
     where
         col = (length . show . snd . bounds $ grid) + 1
         nums = map (map fst) . groupBy ((==) `on` fst.snd) . sortBy (comparing snd) . assocs $ grid
+
+gridIndices :: Grid -> [Int]
+gridIndices = map fst . sortBy (comparing snd) . assocs
+
+instance (Hashable e, Ix i) => Hashable (Array i e) where
+    hashWithSalt = foldl' hashWithSalt
