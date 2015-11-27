@@ -25,14 +25,14 @@ aStarSearch :: (Num cost, Ord a, Ord cost, Hashable a) =>
   -> Maybe [a]          -- Maybe Path
 aStarSearch expand cost heuristic goal start =
     runAStar AStar
-    { expand    = expand
-    , opened    = PSQ.singleton start (heuristic start) start
-    , closed    = Map.empty
-    , path      = Map.empty
-    , heuristic = heuristic
-    , goal      = goal
-    , distances = Map.empty
-    , cost      = cost }
+        { expand    = expand
+        , opened    = PSQ.singleton start (heuristic start) start
+        , closed    = Map.empty
+        , path      = Map.empty
+        , heuristic = heuristic
+        , goal      = goal
+        , distances = Map.empty
+        , cost      = cost }
 
 runAStar :: (Num cost, Ord a, Ord cost, Hashable a) =>
     AStar a cost -> Maybe [a]
@@ -40,8 +40,11 @@ runAStar aStar = do
     (k, p, current, o) <- PSQ.minView (opened aStar)
     if goal aStar current
        then return $ backtrack (path aStar) current
-       else let aStar' = aStar {opened = o, closed = Map.insert current () (closed aStar)}
-             in runAStar $ fst (Set.foldr eval (aStar', (current, fromMaybe 0 (Map.lookup current $ distances aStar'))) (expand aStar' current))
+       else let aStar' = aStar {opened = o
+                               , closed = Map.insert current () (closed aStar)}
+                neighbors = expand aStar' current
+                f = fromMaybe 0 (Map.lookup current $ distances aStar')
+             in runAStar $ fst (Set.foldr eval (aStar', (current, f)) neighbors)
 
 eval :: (Num cost, Ord a, Ord cost, Hashable a) =>
     a -> (AStar a cost, (a, cost)) -> (AStar a cost, (a, cost))
