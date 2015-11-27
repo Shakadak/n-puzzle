@@ -16,8 +16,7 @@ data AStar a cost = AStar {
     heuristic :: a -> cost,
     cost      :: a -> a -> cost }
 
-aStarSearch
-  :: (Num cost, Ord a, Ord cost, Hashable a) =>
+aStarSearch :: (Num cost, Ord a, Ord cost, Hashable a) =>
      (a -> Set a)       -- expand
   -> (a -> a -> cost)   -- cost
   -> (a -> cost)        -- heuristic
@@ -35,6 +34,8 @@ aStarSearch expand cost heuristic goal start =
     , distances = Map.empty
     , cost      = cost }
 
+runAStar :: (Num cost, Ord a, Ord cost, Hashable a) =>
+    AStar a cost -> Maybe [a]
 runAStar aStar = do
     (k, p, current, o) <- PSQ.minView (opened aStar)
     if goal aStar current
@@ -42,6 +43,8 @@ runAStar aStar = do
        else let aStar' = aStar {opened = o, closed = Map.insert current () (closed aStar)}
              in runAStar $ fst (Set.foldr eval (aStar', (current, fromMaybe 0 (Map.lookup current $ distances aStar'))) (expand aStar' current))
 
+eval :: (Num cost, Ord a, Ord cost, Hashable a) =>
+    a -> (AStar a cost, (a, cost)) -> (AStar a cost, (a, cost))
 eval n (aStar, t@(parent, f)) =
     let fn = f + cost aStar parent n
         o = opened    aStar
@@ -68,4 +71,6 @@ eval n (aStar, t@(parent, f)) =
               t)
           _                                             -> (aStar, t)
 
+backtrack :: (Ord a, Hashable a) =>
+    Map a a -> a -> [a]
 backtrack paths goal = reverse $ goal:unfoldr (\x -> fmap (\x -> (x, x)) (Map.lookup x paths)) goal
