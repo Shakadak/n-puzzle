@@ -11,6 +11,7 @@ data Direction = Up | Dn | Lt | Rt
 type Coord = (Int, Int)
 type Grid = Array Int Coord
 
+solution :: Int -> [[Int]]
 solution = fst . go
     where start n = ([], 0:[n ^ 2 - 1, n ^ 2 - 2..1])
           rotateClock = transpose . reverse
@@ -21,7 +22,8 @@ toArray :: [Int] -> Grid
 toArray grid = array (0, length grid - 1) (zip grid [(y, x) | y <- [0..n], x <- [0..n]])
     where n = truncate (sqrt $ fromIntegral $ length grid) - 1
 
-cost one step = 1
+cost :: Num b => a -> a -> b
+cost _ _ = 1
 
 generateGoal :: Int -> Grid
 generateGoal = toArray . concat . solution
@@ -48,9 +50,10 @@ stateToCoords :: Grid -> [(Coord, Int)]
 stateToCoords = map swap . assocs
 
 showGrid :: Grid -> String
-showGrid grid = concatMap ((++ "\n") . intercalate "  " . map show) nums
+showGrid grid = concatMap ((++ "\n") . unwords . map (fill . show)) nums
     where
-        col = (length . show . snd . bounds $ grid) + 1
+        col = (length . show . snd . bounds $ grid)
+        fill s = replicate (col - length s) ' ' ++ s
         nums = map (map fst) . groupBy ((==) `on` fst.snd) . sortBy (comparing snd) . assocs $ grid
 
 gridIndices :: Grid -> [Int]

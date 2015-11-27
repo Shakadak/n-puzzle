@@ -23,21 +23,21 @@ aStarSearch :: (Num cost, Ord a, Ord cost, Hashable a) =>
   -> (a -> Bool)        -- goal
   -> a                  -- start
   -> Maybe [a]          -- Maybe Path
-aStarSearch expand cost heuristic goal start =
+aStarSearch expand' cost' heuristic' goal' start =
     runAStar AStar
-        { expand    = expand
-        , opened    = PSQ.singleton start (heuristic start) start
+        { expand    = expand'
+        , opened    = PSQ.singleton start (heuristic' start) start
         , closed    = Map.empty
         , path      = Map.empty
-        , heuristic = heuristic
-        , goal      = goal
+        , heuristic = heuristic'
+        , goal      = goal'
         , distances = Map.empty
-        , cost      = cost }
+        , cost      = cost' }
 
 runAStar :: (Num cost, Ord a, Ord cost, Hashable a) =>
     AStar a cost -> Maybe [a]
 runAStar aStar = do
-    (k, p, current, o) <- PSQ.minView (opened aStar)
+    (_, _, current, o) <- PSQ.minView (opened aStar)
     if goal aStar current
        then return $ backtrack (path aStar) current
        else let aStar' = aStar {opened = o
@@ -76,4 +76,4 @@ eval n (aStar, t@(parent, f)) =
 
 backtrack :: (Ord a, Hashable a) =>
     Map a a -> a -> [a]
-backtrack paths goal = reverse $ goal:unfoldr (\x -> fmap (\x -> (x, x)) (Map.lookup x paths)) goal
+backtrack paths end = reverse $ end:unfoldr (\s -> fmap (\x -> (x, x)) (Map.lookup s paths)) end
