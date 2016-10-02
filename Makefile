@@ -1,5 +1,5 @@
 all:
-	stack build --no-executable-profiling --no-library-profiling
+	stack build --no-executable-profiling --no-library-profiling --ghc-options="-Wall -Werror"
 
 clean:
 	stack clean
@@ -14,4 +14,4 @@ prun: prof
 run:
 	stack exec -- graphi 4x4.npz
 
-.PHONY: all prof run
+.PHONY: all run clean prof prun

@@ -20,9 +20,9 @@ executable graphi
   other-modules:       Heuristics, AStar, Parser, NPuzzle
   -- other-extensions:
   -- ghc-options:         
-  build-depends:       base >=4.8 && <4.9
-                     , PSQueue >=1.1 && <1.2
-                     , containers >=0.5 && <0.6
+  build-depends:       base
+--                     , PSQueue
+                     , containers
                      , psqueues
                      , hashable
                      , parsec

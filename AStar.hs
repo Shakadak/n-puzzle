@@ -46,7 +46,7 @@ runAStar aStar = do
                 f = fromMaybe 0 (Map.lookup current $ distances aStar')
              in runAStar $ fst (Set.foldr eval (aStar', (current, f)) neighbors)
 
-eval :: (Num cost, Ord a, Ord cost, Hashable a) =>
+{-eval :: (Num cost, Ord a, Ord cost, Hashable a) =>
     a -> (AStar a cost, (a, cost)) -> (AStar a cost, (a, cost))
 eval n (aStar, t@(parent, f)) =
     let fn = f + cost aStar parent n
@@ -72,8 +72,22 @@ eval n (aStar, t@(parent, f)) =
             , path   = Map.insert n parent p
             , distances = Map.insert n fn d },
               t)
-          _                                             -> (aStar, t)
+          _                                             -> (aStar, t)-}
 
 backtrack :: (Ord a, Hashable a) =>
     Map a a -> a -> [a]
 backtrack paths end = reverse $ end:unfoldr (\s -> fmap (\x -> (x, x)) (Map.lookup s paths)) end
+
+eval :: (Num cost, Ord a, Ord cost, Hashable a) =>
+    a -> (AStar a cost, (a, cost)) -> (AStar a cost, (a, cost))
+eval neighbor skip@(aStar, t@(currentNode, currentCost)) =
+    if Map.member neighbor (closed aStar)
+       then skip
+       else do let tmpCost = currentCost + cost aStar currentNode neighbor
+               if maybe False (tmpCost >) (Map.lookup neighbor (distances aStar))
+                  then skip
+                  else (aStar
+                          { opened = PSQ.insert neighbor (tmpCost + heuristic aStar neighbor) neighbor (opened aStar)
+                          , path = Map.insert neighbor currentNode (path aStar)
+                          , distances = Map.insert neighbor tmpCost (distances aStar) }
+                           , t)
