@@ -1,5 +1,5 @@
 all:
-	stack build --no-executable-profiling --no-library-profiling --ghc-options="-Wall -Werror"
+	stack build --no-executable-profiling --no-library-profiling # --ghc-options="-Wall -Werror"
 
 clean:
 	stack clean

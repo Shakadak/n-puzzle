@@ -13,7 +13,7 @@ type Grid = Array Int Coord
 
 solution :: Int -> [[Int]]
 solution = fst . go
-    where start n = ([], 0:[n ^ 2 - 1, n ^ 2 - 2..1])
+    where start n = ([], 0:[n ^ 2 - 1, n ^ 2 - 2..1]) :: ([[Int]], [Int])
           rotateClock = transpose . reverse
           update (s, d) n = (reverse (take n d) : rotateClock s, drop n d)
           go n = foldl' update (start n) (fmap (`div` 2) [2..2*n])
@@ -35,7 +35,7 @@ gridSwap :: Grid -> Direction -> Maybe Grid
 gridSwap grid dir = do
     let movedTile = moveTile (grid!0) dir
     ind <- getIndex grid movedTile
-    return $ grid//[(0, movedTile), (ind, grid!0)]
+    pure $ grid//[(0, movedTile), (ind, grid!0)]
 
 getIndex :: Grid -> Coord -> Maybe Int
 getIndex grid coord = lookup coord (stateToCoords grid)
@@ -52,7 +52,7 @@ stateToCoords = map swap . assocs
 showGrid :: Grid -> String
 showGrid grid = concatMap ((++ "\n") . unwords . map (fill . show)) nums
     where
-        col = (length . show . snd . bounds $ grid)
+        col = length . show . snd . bounds $ grid
         fill s = replicate (col - length s) ' ' ++ s
         nums = map (map fst) . groupBy ((==) `on` fst.snd) . sortBy (comparing snd) . assocs $ grid
 
