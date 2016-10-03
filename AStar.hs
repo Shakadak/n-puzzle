@@ -52,11 +52,11 @@ eval :: (Num cost, Ord a, Ord cost, Hashable a) =>
     -> AStar a cost -> AStar a cost
 eval cost heuristic currentNode currentCost neighbor aStar =
     if Map.member neighbor (closed aStar)
-       then aStar
-       else do let tmpCost = currentCost + cost currentNode neighbor
-               if maybe False (tmpCost >) (Map.lookup neighbor (distances aStar))
-                  then aStar
-                  else aStar
-                          { opened = PSQ.insert neighbor (tmpCost + heuristic neighbor) neighbor (opened aStar)
-                          , path = Map.insert neighbor currentNode (path aStar)
-                          , distances = Map.insert neighbor tmpCost (distances aStar) }
+    then aStar
+    else let tmpCost = currentCost + cost currentNode neighbor
+          in if maybe False (tmpCost >) (Map.lookup neighbor (distances aStar))
+             then aStar
+             else aStar
+                 { opened = PSQ.insert neighbor (tmpCost + heuristic neighbor) neighbor (opened aStar)
+                 , path = Map.insert neighbor currentNode (path aStar)
+                 , distances = Map.insert neighbor tmpCost (distances aStar) }
