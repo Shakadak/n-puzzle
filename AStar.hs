@@ -38,7 +38,7 @@ runAStar :: (Num cost, Ord a, Ord cost, Hashable a) =>
 runAStar expand cost heuristic goal aStar = do
     (_, _, current, o) <- PSQ.minView (opened aStar)
     if goal current
-       then return $ backtrack (path aStar) current
+       then pure $ backtrack (path aStar) current
        else let aStar' = aStar { opened = o, closed = Map.insert current () (closed aStar) }
                 currentCost = fromMaybe 0 (Map.lookup current $ distances aStar')
              in runAStar expand cost heuristic goal (Set.foldr (eval cost heuristic current currentCost) aStar' (expand current))
