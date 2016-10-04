@@ -1,5 +1,6 @@
 module NPuzzle where
 import Data.Array
+import Data.Maybe
 import Data.List
 import Data.Tuple
 import Data.Set (Set, fromList)
@@ -38,7 +39,7 @@ gridSwap grid dir = do
     pure $ grid//[(0, movedTile), (ind, grid!0)]
 
 getIndex :: Grid -> Coord -> Maybe Int
-getIndex grid coord = lookup coord (stateToCoords grid)
+getIndex grid coord = iLookup coord (assocs grid)
 
 moveTile :: Coord -> Direction -> Coord
 moveTile (y, x) Up = (y - 1, x    )
@@ -46,8 +47,8 @@ moveTile (y, x) Dn = (y + 1, x    )
 moveTile (y, x) Lt = (y    , x - 1)
 moveTile (y, x) Rt = (y    , x + 1)
 
-stateToCoords :: Grid -> [(Coord, Int)]
-stateToCoords = map swap . assocs
+iLookup :: Eq b => b -> [(a, b)] -> Maybe a
+iLookup x = foldl' (\acc (i, x') -> if isNothing acc && x == x' then Just i else acc) Nothing
 
 showGrid :: Grid -> String
 showGrid grid = concatMap ((++ "\n") . unwords . map (fill . show)) nums
